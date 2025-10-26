@@ -1,19 +1,32 @@
 version: 0.2
 
+env:
+  # Parameter Store에서 변수 가져오기
+  parameter-store:
+    IMAGE_REPO_NAME: "/myapp/prod/ECR_REPO_NAME"
+    CONTAINER_NAME: "/myapp/prod/ECS_CONTAINER_NAME"
+
 phases:
   pre_build:
     commands:
+      # AWS 환경 변수는 CodeBuild에서 자동으로 주입됩니다.
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      
+      # Parameter Store에서 가져온 변수($IMAGE_REPO_NAME)를 사용합니다.
       - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
+      
+      # CODEBUILD_RESOLVED_SOURCE_VERSION는 CodeBuild가 제공하는 환경 변수입니다.
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
+      
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker build -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+      
   post_build:
     commands:
       - echo Build completed on `date`
@@ -21,6 +34,8 @@ phases:
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo Writing image definitions file...
+      
+      # Parameter Store에서 가져온 변수($CONTAINER_NAME)를 사용합니다.
       - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
