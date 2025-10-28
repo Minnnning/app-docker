@@ -1,0 +1,76 @@
+name: CI-CD to Amazon ECS
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-2
+  SSM_PATH: /kmj-app/prod/
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1단계: 코드 체크아웃
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2단계: AWS OIDC 자격 증명
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::286387522454:role/kmj-app-GitHubActions-Role
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 3단계: Parameter Store에서 모든 변수 가져오기
+      # 이 스텝이 /kmj-app/prod/ 하위의 모든 파라미터를 
+      # 셸 환경 변수로 자동 export
+      - name: Get Parameters from AWS Parameter Store
+        uses: aws-actions/aws-ssm-get-parameters@v1
+        with:
+          path: ${{ env.SSM_PATH }}
+          recursive: true
+          with-decryption: false
+
+      # 4단계: ECR 로그인
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 5단계: Docker 이미지 빌드 및 푸시
+      - name: Build, Tag, and Push Docker Image
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPO_NAME:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPO_NAME:$IMAGE_TAG
+          
+          echo "image=$ECR_REGISTRY/$ECR_REPO_NAME:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "container-name=$ECS_CONTAINER_NAME" >> $GITHUB_OUTPUT
+
+      # 6단계: Amazon ECS 배포
+      - name: Deploy to Amazon ECS
+        env:
+          ECS_CLUSTER_NAME: $ECS_CLUSTER_NAME
+          ECS_SERVICE_NAME: $ECS_SERVICE_NAME
+          ECS_TASK_DEFINITION: $ECS_TASK_DEFINITION
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          service: ${{ env.ECS_SERVICE_NAME }}
+          cluster: ${{ env.ECS_CLUSTER_NAME }}
+          
+          image: ${{ steps.build-image.outputs.image }}
+          container-name: ${{ steps.build-image.outputs.container-name }}
+          
+          wait-for-service-stability: true

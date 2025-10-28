@@ -134,7 +134,7 @@ async def root():
     """헬스 체크 엔드포인트"""
     return {
         "message": "API is running",
-        "version": "1.0.1",
+        "version": "1.1.0",
         "status": "healthy"
     }
 
