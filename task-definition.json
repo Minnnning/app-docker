@@ -57,9 +57,6 @@
             "name": "adot-collector",
             "image": "public.ecr.aws/aws-observability/aws-otel-collector:latest",
             "essential": true,
-            "command": [
-                "--config=ssm:kmj-adot-fargate-prometheus-config"
-            ],
             "environment": [
                 {
                     "name": "AMP_WORKSPACE_URL",
@@ -68,6 +65,10 @@
                 {
                     "name": "AWS_REGION",
                     "value": "ap-northeast-2"
+                },
+                {
+                    "name": "AOT_CONFIG_CONTENT",
+                    "value": "receivers:\n  prometheus:\n    config:\n      scrape_configs:\n        - job_name: \"my-fastapi-app\"\n          static_configs:\n            - targets: [\"localhost:8000\"]\nprocessors:\n  batch:\nexporters:\n  prometheusremotewrite:\n    endpoint: https://aps-workspaces.ap-northeast-2.amazonaws.com/workspaces/ws-be58e135-8abc-4cf4-86d1-41db053d6c1f/api/v1/remote_write\n    auth:\n      authenticator: sigv4auth\nextensions:\n  sigv4auth:\n    region: ap-northeast-2\n    service: \"aps\"\nservice:\n  extensions: [sigv4auth]\n  pipelines:\n    metrics:\n      receivers: [prometheus]\n      processors: [batch]\n      exporters: [prometheusremotewrite]\n"
                 }
             ],
             "logConfiguration": {
@@ -78,6 +79,16 @@
                     "awslogs-region": "ap-northeast-2",
                     "awslogs-stream-prefix": "adot-collector" 
                 }
+            },
+            "healthCheck": {
+                "command": [
+                    "CMD-SHELL",
+                    "curl -f http://localhost:8888/ || exit 1"
+                ],
+                "interval": 30,
+                "retries": 3,
+                "startPeriod": 15,
+                "timeout": 5
             }
         }
     ]

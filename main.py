@@ -16,14 +16,11 @@ from prometheus_fastapi_instrumentator import Instrumentator  # <--- 1. 라이�
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# <--- 2. FastAPI 앱 생성 *전에* Instrumentator 초기화
-instrumentator = Instrumentator().instrument()
-
 # FastAPI 앱 초기화
 app = FastAPI(title="My API", version="1.0.0")
 
-# <--- 3. 앱에 메트릭 수집기 적용 및 /metrics 엔드포인트 노출
-instrumentator.expose(app)
+# 앱에 메트릭 수집기 적용 및 /metrics 엔드포인트 노출
+Instrumentator().instrument(app).expose(app)
 
 # CORS 설정
 app.add_middleware(
