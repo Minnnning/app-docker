@@ -34,7 +34,7 @@ jobs:
       # 이 스텝이 /kmj-app/prod/ 하위의 모든 파라미터를 
       # 셸 환경 변수로 자동 export
       - name: Get Parameters from AWS Parameter Store
-        uses: Minnnning/aws-ssm-parameter-store@latest
+        uses: Minnnning/aws-ssm-getparameters-action@v2
         with:
           path: ${{ env.SSM_PATH }}
           recursive: true
