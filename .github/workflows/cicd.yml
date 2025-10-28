@@ -11,7 +11,6 @@ permissions:
 
 env:
   AWS_REGION: ap-northeast-2
-  SSM_PATH: /kmj-app/prod/
 
 jobs:
   deploy:
@@ -34,11 +33,13 @@ jobs:
       # 이 스텝이 /kmj-app/prod/ 하위의 모든 파라미터를 
       # 셸 환경 변수로 자동 export
       - name: Get Parameters from AWS Parameter Store
-        uses: Minnnning/aws-ssm-getparameters-action@v2
+        uses: dkershner6/aws-ssm-getparameters-action@v2
         with:
-          path: ${{ env.SSM_PATH }}
-          recursive: true
-          with-decryption: false
+          parameterPairs: |
+            /kmj-app/prod/ECS_TASK_DEFINITION = ECS_TASK_DEFINITION
+            /kmj-app/prod/ECS_SERVICE_NAME = ECS_SERVICE_NAME
+            /kmj-app/prod/ECS_CLUSTER_NAME = ECS_CLUSTER_NAME
+          withDecryption: false
 
       # 4단계: ECR 로그인
       - name: Login to Amazon ECR
