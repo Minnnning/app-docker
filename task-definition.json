@@ -32,6 +32,17 @@
                     "value": "ap-northeast-2"
                 }
             ],
+            "environmentFiles": [],
+            "healthCheck": {
+                "command": [
+                "CMD-SHELL",
+                "wget http://localhost:8000/health || exit 1"
+                ],
+                "interval": 60,
+                "retries": 3,
+                "startPeriod": 60,
+                "timeout": 5
+            },
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
@@ -44,4 +55,3 @@
         }
     ]
 }
-

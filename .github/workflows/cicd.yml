@@ -9,9 +9,6 @@ permissions:
   id-token: write
   contents: read
 
-env:
-  AWS_REGION: ap-northeast-2
-
 jobs:
   deploy:
     name: Build and Deploy
@@ -27,9 +24,9 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::286387522454:role/kmj-app-GitHubActions-Role
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ap-northeast-2
 
-      # 3단계: Parameter Store에서 모든 변수 가져오기
+      # 3단계: Parameter Store에서 사용할 변수 가져오기
       - name: Get Parameters from AWS Parameter Store
         uses: dkershner6/aws-ssm-getparameters-action@v2
         with:
@@ -39,6 +36,9 @@ jobs:
             /kmj-app/prod/ECR_REPO_NAME = ECR_REPO_NAME,
             /kmj-app/prod/ECS_CONTAINER_NAME = ECS_CONTAINER_NAME
           withDecryption: false
+          # 배포용도 (ECS_SERVICE_NAME,ECS_CLUSTER_NAME)
+          # 업로드 용도 (ECR_REPO_NAME)
+          # 특정 컨테이너 선택후 이미지 업데이트용 (ECS_CONTAINER_NAME)
 
       # 4단계: ECR 로그인
       - name: Login to Amazon ECR
