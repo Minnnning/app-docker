@@ -70,4 +70,3 @@ jobs:
           container-name: ${{ steps.build-image.outputs.container-name }}
           
           wait-for-service-stability: true
-          dkershner6/aws-ssm-getparameters-action@v2
