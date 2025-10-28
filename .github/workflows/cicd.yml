@@ -34,7 +34,7 @@ jobs:
       # 이 스텝이 /kmj-app/prod/ 하위의 모든 파라미터를 
       # 셸 환경 변수로 자동 export
       - name: Get Parameters from AWS Parameter Store
-        uses: aws-actions/aws-ssm-get-parameter@v1
+        uses: Minnnning/aws-ssm-parameter-store@latest
         with:
           path: ${{ env.SSM_PATH }}
           recursive: true
@@ -70,3 +70,4 @@ jobs:
           container-name: ${{ steps.build-image.outputs.container-name }}
           
           wait-for-service-stability: true
+          dkershner6/aws-ssm-getparameters-action@v2
