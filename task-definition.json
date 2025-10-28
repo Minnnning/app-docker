@@ -36,7 +36,7 @@
             "healthCheck": {
                 "command": [
                 "CMD-SHELL",
-                "wget http://localhost:8000 || exit 1"
+                "curl -f http://localhost:8000/ || exit 1"
                 ],
                 "interval": 60,
                 "retries": 3,
