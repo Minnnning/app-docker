@@ -1,0 +1,28 @@
+{
+    "family": "kmj-app-task-def-3",
+    "containerDefinitions": [
+        {
+            "name": "kmj-app-container",
+            "image": "IMAGE_PLACEHOLDER",
+            "cpu": 512,
+            "memory": 512,
+            "portMappings": [
+                {
+                    "containerPort": 8000,
+                    "hostPort": 8000
+                }
+            ],
+            "essential": true,
+            "environment": [],
+            "mountPoints": [],
+            "volumesFrom": []
+        }
+    ],
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "512",
+    "memory": "512",
+    "executionRoleArn": "arn:aws:iam::286387522454:role/kmj-ecsTaskExecutionRole"
+}

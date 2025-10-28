@@ -30,16 +30,15 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       # 3단계: Parameter Store에서 모든 변수 가져오기
-      # 이 스텝이 /kmj-app/prod/ 하위의 모든 파라미터를 
-      # 셸 환경 변수로 자동 export
+      # (기존 오류의 원인이었던 각 줄 끝의 쉼표(,)를 제거했습니다)
       - name: Get Parameters from AWS Parameter Store
         uses: dkershner6/aws-ssm-getparameters-action@v2
         with:
           parameterPairs: |
-            /kmj-app/prod/ECS_TASK_DEFINITION = ECS_TASK_DEFINITION,
             /kmj-app/prod/ECS_SERVICE_NAME = ECS_SERVICE_NAME,
             /kmj-app/prod/ECS_CLUSTER_NAME = ECS_CLUSTER_NAME,
-            /kmj-app/prod/ECR_REPO_NAME = ECR_REPO_NAME
+            /kmj-app/prod/ECR_REPO_NAME = ECR_REPO_NAME,
+            /kmj-app/prod/ECS_CONTAINER_NAME = ECS_CONTAINER_NAME
           withDecryption: false
 
       # 4단계: ECR 로그인
@@ -58,17 +57,31 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPO_NAME:$IMAGE_TAG
           
           echo "image=$ECR_REGISTRY/$ECR_REPO_NAME:$IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "container-name=$ECS_CONTAINER_NAME" >> $GITHUB_OUTPUT
 
-      # 6단계: Amazon ECS 배포
+
+      # 6단계: Task Definition 템플릿에 새 이미지 주소 삽입
+      - name: Render Amazon ECS Task Definition
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          # 1단계에서 생성한 task-definition.json 파일을 지정
+          task-definition: task-definition.json
+          
+          # 템플릿의 "name" 필드와 일치하는 컨테이너를 찾음 (3단계에서 가져온 값)
+          container-name: ${{ env.ECS_CONTAINER_NAME }}
+          
+          # 5단계에서 빌드한 새 이미지 주소를 템플릿에 삽입
+          image: ${{ steps.build-image.outputs.image }}
+
+      # 7단계: Amazon ECS에 새 Task Definition 배포
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          # 6단계에서 생성된 "최종 JSON 파일"을 배포에 사용
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          
+          # 3단계에서 가져온 서비스 및 클러스터 이름
           service: ${{ env.ECS_SERVICE_NAME }}
           cluster: ${{ env.ECS_CLUSTER_NAME }}
-          
-          image: ${{ steps.build-image.outputs.image }}
-          container-name: ${{ steps.build-image.outputs.container-name }}
           
           wait-for-service-stability: true
