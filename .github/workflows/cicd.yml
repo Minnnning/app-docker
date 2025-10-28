@@ -11,7 +11,7 @@ permissions:
 
 env:
   AWS_REGION: ap-northeast-2
-  SSM_PATH: /kmj-app/prod/*
+  SSM_PATH: /kmj-app/prod/
 
 jobs:
   deploy:
@@ -34,7 +34,7 @@ jobs:
       # 이 스텝이 /kmj-app/prod/ 하위의 모든 파라미터를 
       # 셸 환경 변수로 자동 export
       - name: Get Parameters from AWS Parameter Store
-        uses: aws-actions/aws-ssm-get-parameters@v1
+        uses: aws-actions/aws-ssm-get-parameter@v1
         with:
           path: ${{ env.SSM_PATH }}
           recursive: true
@@ -60,10 +60,6 @@ jobs:
 
       # 6단계: Amazon ECS 배포
       - name: Deploy to Amazon ECS
-        env:
-          ECS_CLUSTER_NAME: $ECS_CLUSTER_NAME
-          ECS_SERVICE_NAME: $ECS_SERVICE_NAME
-          ECS_TASK_DEFINITION: $ECS_TASK_DEFINITION
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
