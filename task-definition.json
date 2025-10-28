@@ -1,27 +1,47 @@
 {
     "family": "kmj-app-task-def-3",
-    "containerDefinitions": [
-        {
-            "name": "kmj-app-container",
-            "image": "IMAGE_PLACEHOLDER",
-            "portMappings": [
-                {
-                    "containerPort": 8000,
-                    "hostPort": 8000
-                }
-            ],
-            "essential": true,
-            "environment": [],
-            "mountPoints": [],
-            "volumesFrom": []
-        }
-    ],
+    "taskRoleArn": "arn:aws:iam::286387522454:role/kmj-ecsAppTaskRole",
+    "executionRoleArn": "arn:aws:iam::286387522454:role/kmj-ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "requiresCompatibilities": [
         "FARGATE"
     ],
     "cpu": "512",
     "memory": "1024",
-    "executionRoleArn": "arn:aws:iam::286387522454:role/kmj-ecsTaskExecutionRole",
-    "taskRoleArn": "arn:aws:iam::286387522454:role/kmj-ecsAppTaskRole"
+    "containerDefinitions": [
+        {
+            "name": "kmj-app-container",
+            "image": "IMAGE_PLACEHOLDER",
+            "essential": true,
+            "portMappings": [
+                {
+                    "containerPort": 8000,
+                    "hostPort": 8000,
+                    "appProtocol": "http",
+                    "name": "fastapi",
+                    "protocol": "tcp"
+                }
+            ],
+            "environment": [
+                {
+                    "name": "DB_SECRET_NAME",
+                    "value": "kmj/db"
+                },
+                {
+                    "name": "AWS_REGION",
+                    "value": "ap-northeast-2"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/kmj-app-task-def-3",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "ap-northeast-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            }
+        }
+    ]
 }
+
