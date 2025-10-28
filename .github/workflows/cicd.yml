@@ -36,9 +36,10 @@ jobs:
         uses: dkershner6/aws-ssm-getparameters-action@v2
         with:
           parameterPairs: |
-            /kmj-app/prod/ECS_TASK_DEFINITION = ECS_TASK_DEFINITION
-            /kmj-app/prod/ECS_SERVICE_NAME = ECS_SERVICE_NAME
-            /kmj-app/prod/ECS_CLUSTER_NAME = ECS_CLUSTER_NAME
+            /kmj-app/prod/ECS_TASK_DEFINITION = ECS_TASK_DEFINITION,
+            /kmj-app/prod/ECS_SERVICE_NAME = ECS_SERVICE_NAME,
+            /kmj-app/prod/ECS_CLUSTER_NAME = ECS_CLUSTER_NAME,
+            /kmj-app/prod/ECR_REPO_NAME = ECR_REPO_NAME
           withDecryption: false
 
       # 4단계: ECR 로그인
