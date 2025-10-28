@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# 상태확인용
+RUN apt-get update && apt-get install -y curl
+
 # 애플리케이션 코드 복사
 COPY . .
 
