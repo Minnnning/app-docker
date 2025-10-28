@@ -4,8 +4,6 @@
         {
             "name": "kmj-app-container",
             "image": "IMAGE_PLACEHOLDER",
-            "cpu": 512,
-            "memory": 512,
             "portMappings": [
                 {
                     "containerPort": 8000,
@@ -23,6 +21,7 @@
         "FARGATE"
     ],
     "cpu": "512",
-    "memory": "512",
-    "executionRoleArn": "arn:aws:iam::286387522454:role/kmj-ecsTaskExecutionRole"
+    "memory": "1024",
+    "executionRoleArn": "arn:aws:iam::286387522454:role/kmj-ecsTaskExecutionRole",
+    "taskRoleArn": "arn:aws:iam::286387522454:role/kmj-ecsAppTaskRole"
 }

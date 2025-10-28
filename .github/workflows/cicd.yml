@@ -30,7 +30,6 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       # 3단계: Parameter Store에서 모든 변수 가져오기
-      # (기존 오류의 원인이었던 각 줄 끝의 쉼표(,)를 제거했습니다)
       - name: Get Parameters from AWS Parameter Store
         uses: dkershner6/aws-ssm-getparameters-action@v2
         with:
@@ -67,7 +66,7 @@ jobs:
           # 1단계에서 생성한 task-definition.json 파일을 지정
           task-definition: task-definition.json
           
-          # 템플릿의 "name" 필드와 일치하는 컨테이너를 찾음 (3단계에서 가져온 값)
+          # 템플릿의 "name" 필드와 일치하는 컨테이너를 찾음
           container-name: ${{ env.ECS_CONTAINER_NAME }}
           
           # 5단계에서 빌드한 새 이미지 주소를 템플릿에 삽입
