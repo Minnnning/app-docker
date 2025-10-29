@@ -10,7 +10,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from datetime import datetime
 import logging
-from prometheus_fastapi_instrumentator import Instrumentator  # <--- 1. 라이브러리 임포트
+from prometheus_fastapi_instrumentator import Instrumentator
+from prometheus_client import Counter, Gauge, Histogram 
+import time
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
